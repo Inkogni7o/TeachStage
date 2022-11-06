@@ -1,6 +1,7 @@
 # -*- coding: UTF-8 -*-
 import sqlite3
 import sys
+from datetime import datetime, timedelta
 
 from PyQt5.QtWidgets import QApplication, QWidget
 from forms.add_groupUI import Ui_Form
@@ -26,7 +27,9 @@ class NewGroupWindow(QWidget, Ui_Form):
             'Четверг': (self.time_edit_4, self.end_edit_4),
             'Пятница': (self.time_edit_5, self.end_edit_5),
             'Суббота': (self.time_edit_6, self.end_edit_6),
-            'Воскресенье': (self.time_edit_7, self.end_edit_7)
+            'Воскресенье': (self.time_edit_7, self.end_edit_7),
+            0: 'Понедельник', 1: 'Вторник', 2: 'Среда',
+            3: 'Четверг', 4: 'Пятница', 5: 'Суббота', 6: 'Воскресенье'
         }
 
     def open_time(self):
@@ -40,12 +43,26 @@ class NewGroupWindow(QWidget, Ui_Form):
             self.days.pop(self.days.index(self.sender().text()))
 
     def new_group(self):
+        all_work_days, end_of_school_year = list(), \
+            datetime(datetime.now().year + 1 if datetime.now().month > 5 else datetime.now().year, 6, 1)
+        day = datetime.now()
+        while day.month != end_of_school_year.month or day.day != end_of_school_year.day:
+            if self.main_dict[day.weekday()] in self.days:
+                all_work_days.append(str(day.day) + '.' + str(day.month))
+            day += timedelta(days=1)
+
         with sqlite3.connect('main_db.db') as con:
             cur = con.cursor()
-            cur.execute("""INSERT INTO groups(title, teacher_login, max_count, days_of_the_week, starts, ends)
-            VALUES(?,?,?,?,?,?)""", (self.name_group_input.text(), self.login, int(self.count_pupils_input.text()),
-                                     ' '.join(self.days), ' '.join([self.main_dict[i][0].text() for i in self.days]),
-                                     ' '.join([self.main_dict[i][1].text() for i in self.days])))
+            cur.execute("""INSERT INTO groups(title, teacher_login, max_count, days_of_the_week, starts,
+             ends, day_start, days_work) VALUES(?,?,?,?,?,?,?,?)""",
+                        (self.name_group_input.text(),
+                         self.login,
+                         int(self.count_pupils_input.text()),
+                         ' '.join(self.days),
+                         ' '.join([self.main_dict[i][0].text() for i in self.days]),
+                         ' '.join([self.main_dict[i][1].text() for i in self.days]),
+                         str(datetime.now().day) + '.' + str(datetime.now().month),
+                         ','.join(all_work_days)))
             con.commit()
             self.close()
 

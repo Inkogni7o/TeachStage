@@ -29,16 +29,20 @@ class TodayWindow(QMainWindow, Ui_MainWindow):
             cur = con.cursor()
             self.result = cur.execute("""SELECT title, days_of_the_week, starts, ends, id FROM groups
              WHERE days_of_the_week LIKE ?""", ('%' + day_of_the_week + '%',)).fetchall()
-        for group in self.result:
-            self.today_groups.setRowCount(len(self.result))
-            self.today_groups.setItem(self.result.index(group), 0, QTableWidgetItem(group[0]))
-            time = QTableWidgetItem(group[2].split()[group[1].split().index(day_of_the_week)] + ' - '
-                                    + group[3].split()[group[1].split().index(day_of_the_week)])
-            self.today_groups.setItem(self.result.index(group), 1, time)
-            self.today_groups.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
-            self.today_groups.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
-            self.today_groups.scrollToItem(time)
-        self.today_groups.viewport().installEventFilter(self)
+        if self.result:
+            for group in self.result:
+                self.today_groups.setRowCount(len(self.result))
+                self.today_groups.setItem(self.result.index(group), 0, QTableWidgetItem(group[0]))
+                time = QTableWidgetItem(group[2].split()[group[1].split().index(day_of_the_week)] + ' - '
+                                        + group[3].split()[group[1].split().index(day_of_the_week)])
+                self.today_groups.setItem(self.result.index(group), 1, time)
+
+                self.today_groups.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+                self.today_groups.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
+                self.today_groups.scrollToItem(time)
+            self.today_groups.viewport().installEventFilter(self)
+        else:
+            self.today_groups.setRowCount(0)
 
     def eventFilter(self, source, event):
         if (event.type() == QtCore.QEvent.MouseButtonDblClick and
