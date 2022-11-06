@@ -45,8 +45,7 @@ class TodayWindow(QMainWindow, Ui_MainWindow):
                 event.buttons() == QtCore.Qt.LeftButton and
                 source is self.today_groups.viewport()):
             item = self.today_groups.itemAt(event.pos())
-            self.edit_group = EditGroupWindow(self.result[-1])
-            self.close()
+            self.edit_group = EditGroupWindow(self.result[[i[0] for i in self.result].index(item.text())][-1])
             self.edit_group.show()
         return super(TodayWindow, self).eventFilter(source, event)
 
