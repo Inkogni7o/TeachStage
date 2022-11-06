@@ -11,6 +11,7 @@ from forms.today_formUI import Ui_MainWindow
 from new_group import NewGroupWindow
 from consts import DECODE_DAYS
 from edit_group import EditGroupWindow
+from new_pupil import NewPupilWindow
 
 
 class TodayWindow(QMainWindow, Ui_MainWindow):
@@ -51,11 +52,16 @@ class TodayWindow(QMainWindow, Ui_MainWindow):
             item = self.today_groups.itemAt(event.pos())
             self.edit_group = EditGroupWindow(self.result[[i[0] for i in self.result].index(item.text())][-1])
             self.edit_group.show()
+            self.edit_group.add_pupil.clicked.connect(self.add_new_pupil)
         return super(TodayWindow, self).eventFilter(source, event)
 
     def add_new_group(self):
-        wndw = NewGroupWindow(self.login)
-        wndw.show()
+        self.wndw = NewGroupWindow(self.login)
+        self.wndw.show()
+
+    def add_new_pupil(self):
+        self.wndw = NewPupilWindow()
+        self.wndw.show()
 
 
 if __name__ == '__main__':

@@ -23,24 +23,28 @@ class EditGroupWindow(QMainWindow, Ui_MainWindow):
         with sqlite3.connect('main_db.db') as con:
             cur = con.cursor()
             self.pupils = cur.execute("""SELECT id,name,second_name,attendance FROM pupils 
-            WHERE id_group = ?""", (id_group,)).fetchall()
-            self.timetable = cur.execute("""SELECT days_work FROM groups WHERE id = ?""", (id_group,)).fetchone()
+                WHERE id_group = ?""", (id_group,)).fetchall()
+            self.timetable = cur.execute("""SELECT days_work,title FROM groups WHERE id = ?""", (id_group,)).fetchone()
+
+            self.setWindowTitle(self.timetable[1])
             self.tableWidget.setRowCount(len(self.pupils))
             self.tableWidget.setColumnCount(len(self.timetable[0].split(',')) + 1)
-            self.tableWidget.setHorizontalHeaderLabels(['ФИ', *self.timetable[0].split(',')])
+            self.tableWidget.setHorizontalHeaderLabels([*self.timetable[0].split(',')])
+            self.tableWidget.setVerticalHeaderLabels([i[1] + i[2] for i in self.pupils])
+
             for i, pupil in enumerate(self.pupils):
-                self.tableWidget.setItem(i, 0, QTableWidgetItem(pupil[1] + ' ' + pupil[2]))
                 for j, day in enumerate(pupil[-1].split(',')):
                     delegate = AlignDelegate(self.tableWidget)
-                    self.tableWidget.setItemDelegateForColumn(j + 1, delegate)
+                    self.tableWidget.setItemDelegateForColumn(j, delegate)
 
                     # TODO: заменить внутренности таблицы на другие символы
                     if day == '2':
-                        self.tableWidget.setItem(i, j + 1, QTableWidgetItem('2'))
+                        self.tableWidget.setItem(i, j, QTableWidgetItem('2'))
                     elif day == '1':
-                        self.tableWidget.setItem(i, j + 1, QTableWidgetItem('1'))
+                        self.tableWidget.setItem(i, j, QTableWidgetItem('1'))
                     else:
-                        self.tableWidget.setItem(i, j + 1, QTableWidgetItem('X'))
+                        self.tableWidget.setItem(i, j, QTableWidgetItem('X'))
+
             self.tableWidget.resizeRowsToContents()
             self.tableWidget.resizeColumnsToContents()
 
