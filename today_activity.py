@@ -49,8 +49,8 @@ class TodayWindow(QMainWindow, Ui_MainWindow):
         if (event.type() == QtCore.QEvent.MouseButtonDblClick and
                 event.buttons() == QtCore.Qt.LeftButton and
                 source is self.today_groups.viewport()):
-            item = self.today_groups.itemAt(event.pos())
-            self.edit_group = EditGroupWindow(self.result[[i[0] for i in self.result].index(item.text())][-1])
+            self.item = self.today_groups.itemAt(event.pos())
+            self.edit_group = EditGroupWindow(self.result[[i[0] for i in self.result].index(self.item.text())][-1])
             self.edit_group.show()
             self.edit_group.add_pupil.clicked.connect(self.add_new_pupil)
         return super(TodayWindow, self).eventFilter(source, event)
