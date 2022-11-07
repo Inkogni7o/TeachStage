@@ -29,8 +29,8 @@ class EditGroupWindow(QMainWindow, Ui_MainWindow):
             self.setWindowTitle(self.timetable[1])
             self.tableWidget.setRowCount(len(self.pupils))
             self.tableWidget.setColumnCount(len(self.timetable[0].split(',')) + 1)
-            self.tableWidget.setHorizontalHeaderLabels([*self.timetable[0].split(',')])
-            self.tableWidget.setVerticalHeaderLabels([i[1] + i[2] for i in self.pupils])
+            self.tableWidget.setHorizontalHeaderLabels(['.'.join(i.split('.')[:2]) for i in self.timetable[0].split(',')])
+            self.tableWidget.setVerticalHeaderLabels([i[1] + ' '+ i[2] for i in self.pupils])
 
             for i, pupil in enumerate(self.pupils):
                 for j, day in enumerate(pupil[-1].split(',')):
@@ -42,8 +42,11 @@ class EditGroupWindow(QMainWindow, Ui_MainWindow):
                         self.tableWidget.setItem(i, j, QTableWidgetItem('2'))
                     elif day == '1':
                         self.tableWidget.setItem(i, j, QTableWidgetItem('1'))
-                    else:
+                    # отсутствовал на тех занятиях, когда не занесли в базу (серый фон)
+                    elif day == 'X':
                         self.tableWidget.setItem(i, j, QTableWidgetItem('X'))
+                    else:
+                        self.tableWidget.setItem(i, j, QTableWidgetItem(' '))
 
             self.tableWidget.resizeRowsToContents()
             self.tableWidget.resizeColumnsToContents()

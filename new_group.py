@@ -48,7 +48,7 @@ class NewGroupWindow(QWidget, Ui_Form):
         day = datetime.now()
         while day.month != end_of_school_year.month or day.day != end_of_school_year.day:
             if self.main_dict[day.weekday()] in self.days:
-                all_work_days.append(str(day.day) + '.' + str(day.month))
+                all_work_days.append(str(day.day) + '.' + str(day.month) + '.' + str(day.year))
             day += timedelta(days=1)
 
         with sqlite3.connect('main_db.db') as con:

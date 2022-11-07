@@ -50,6 +50,7 @@ class TodayWindow(QMainWindow, Ui_MainWindow):
                 event.buttons() == QtCore.Qt.LeftButton and
                 source is self.today_groups.viewport()):
             self.item = self.today_groups.itemAt(event.pos())
+            print(self.result[[i[0] for i in self.result].index(self.item.text())][-1])
             self.edit_group = EditGroupWindow(self.result[[i[0] for i in self.result].index(self.item.text())][-1])
             self.edit_group.show()
             self.edit_group.add_pupil.clicked.connect(self.add_new_pupil)
@@ -60,8 +61,10 @@ class TodayWindow(QMainWindow, Ui_MainWindow):
         self.wndw.show()
 
     def add_new_pupil(self):
-        self.wndw = NewPupilWindow()
-        self.wndw.show()
+        self.wndw_new = NewPupilWindow(self.item.text())
+        self.wndw_new.show()
+        self.wndw_new.buttonBox.accepted.connect(lambda: self.edit_group.update_table(self.result[[i[0]
+            for i in self.result].index(self.item.text())][-1]))
 
 
 if __name__ == '__main__':
