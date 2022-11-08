@@ -1,8 +1,10 @@
 # -*- coding: UTF-8 -*-
 import sqlite3
 import sys
+import holidays
 from datetime import datetime, timedelta
 
+from PyQt5.QtCore import QTime
 from PyQt5.QtWidgets import QApplication, QWidget
 from forms.add_groupUI import Ui_Form
 
@@ -16,7 +18,8 @@ class NewGroupWindow(QWidget, Ui_Form):
         self.buttonBox.rejected.connect(lambda: self.close())
         self.buttonBox.accepted.connect(self.new_group)
 
-        lst = [self.monday, self.tuesday, self.wendsday, self.thursday, self.friday, self.saturday, self.sunday]
+        lst = [self.monday, self.tuesday, self.wendsday, self.thursday,
+               self.friday, self.saturday, self.sunday]
         for word in lst:
             word.clicked.connect(self.open_time)
 
@@ -32,6 +35,7 @@ class NewGroupWindow(QWidget, Ui_Form):
             3: 'Четверг', 4: 'Пятница', 5: 'Суббота', 6: 'Воскресенье'
         }
 
+
     def open_time(self):
         if self.main_dict[self.sender().text()][0].isEnabled() == 0:
             self.main_dict[self.sender().text()][0].setEnabled(True)
@@ -39,14 +43,20 @@ class NewGroupWindow(QWidget, Ui_Form):
             self.days.append(self.sender().text())
         else:
             self.main_dict[self.sender().text()][0].setEnabled(False)
+            self.main_dict[self.sender().text()][0].setTime(QTime(0, 0))
             self.main_dict[self.sender().text()][1].setEnabled(False)
+            self.main_dict[self.sender().text()][1].setTime(QTime(0, 0))
             self.days.pop(self.days.index(self.sender().text()))
 
     def new_group(self):
-        all_work_days, end_of_school_year = list(), \
-            datetime(datetime.now().year + 1 if datetime.now().month > 5 else datetime.now().year, 6, 1)
+        all_work_days, end_of_school_year = (list(),
+            datetime(datetime.now().year + 1 if datetime.now().month > 5 else datetime.now().year, 6, 1))
         day = datetime.now()
         while day.month != end_of_school_year.month or day.day != end_of_school_year.day:
+            for holiday in [i[0] for i in holidays.RU(years=datetime.now().year).items()]:
+                if holiday.day == day.day and holiday.month == day.month:
+                    day += timedelta(days=1)
+                    continue
             if self.main_dict[day.weekday()] in self.days:
                 all_work_days.append(str(day.day) + '.' + str(day.month) + '.' + str(day.year))
             day += timedelta(days=1)

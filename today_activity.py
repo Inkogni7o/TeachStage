@@ -3,6 +3,7 @@ import datetime as dt
 import sqlite3
 import sys
 
+import holidays
 from PyQt5.QtCore import QDate
 
 from PyQt5 import QtWidgets, QtCore
@@ -25,25 +26,34 @@ class TodayWindow(QMainWindow, Ui_MainWindow):
         self.calendar.clicked.connect(self.display_groups)
 
     def display_groups(self):
-        with sqlite3.connect('main_db.db') as con:
-            day_of_the_week = DECODE_DAYS[self.calendar.selectedDate().dayOfWeek()]
-            cur = con.cursor()
-            self.result = cur.execute("""SELECT title, days_of_the_week, starts, ends, id FROM groups
-             WHERE days_of_the_week LIKE ?""", ('%' + day_of_the_week + '%',)).fetchall()
-        if self.result:
-            for group in self.result:
-                self.today_groups.setRowCount(len(self.result))
-                self.today_groups.setItem(self.result.index(group), 0, QTableWidgetItem(group[0]))
-                time = QTableWidgetItem(group[2].split()[group[1].split().index(day_of_the_week)] + ' - '
-                                        + group[3].split()[group[1].split().index(day_of_the_week)])
-                self.today_groups.setItem(self.result.index(group), 1, time)
-
-                self.today_groups.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
-                self.today_groups.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
-                self.today_groups.scrollToItem(time)
-            self.today_groups.viewport().installEventFilter(self)
+        for day in holidays.RU(years=dt.datetime.now().year).items():
+            if (day[0].day == self.calendar.selectedDate().day() and
+            day[0].month == self.calendar.selectedDate().month()):
+                print('ok')
+                self.today_groups.setRowCount(1)
+                self.today_groups.setItem(0, 0, QTableWidgetItem('Сегодня праздник!'))
+                self.today_groups.setItem(0, 1, QTableWidgetItem(day[-1]))
+                break
         else:
-            self.today_groups.setRowCount(0)
+            with sqlite3.connect('main_db.db') as con:
+                day_of_the_week = DECODE_DAYS[self.calendar.selectedDate().dayOfWeek()]
+                cur = con.cursor()
+                self.result = cur.execute("""SELECT title, days_of_the_week, starts, ends, id FROM groups
+                 WHERE days_of_the_week LIKE ?""", ('%' + day_of_the_week + '%',)).fetchall()
+            if self.result:
+                for group in self.result:
+                    self.today_groups.setRowCount(len(self.result))
+                    self.today_groups.setItem(self.result.index(group), 0, QTableWidgetItem(group[0]))
+                    time = QTableWidgetItem(group[2].split()[group[1].split().index(day_of_the_week)] + ' - '
+                                            + group[3].split()[group[1].split().index(day_of_the_week)])
+                    self.today_groups.setItem(self.result.index(group), 1, time)
+
+                    self.today_groups.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+                    self.today_groups.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
+                    self.today_groups.scrollToItem(time)
+                self.today_groups.viewport().installEventFilter(self)
+            else:
+                self.today_groups.setRowCount(0)
 
     def eventFilter(self, source, event):
         if (event.type() == QtCore.QEvent.MouseButtonDblClick and
@@ -59,6 +69,7 @@ class TodayWindow(QMainWindow, Ui_MainWindow):
     def add_new_group(self):
         self.wndw = NewGroupWindow(self.login)
         self.wndw.show()
+        self.wndw.buttonBox.accepted.connect(self.display_groups)
 
     def add_new_pupil(self):
         self.wndw_new = NewPupilWindow(self.item.text())
