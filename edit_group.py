@@ -3,9 +3,10 @@ import sqlite3
 import sys
 
 from PyQt5 import QtWidgets, QtCore
-from PyQt5.QtWidgets import QMainWindow, QApplication, QTableWidgetItem, QMenu
+from PyQt5.QtWidgets import QMainWindow, QApplication, QTableWidgetItem, QMenu, QAction
 
 from forms.one_groupUI import Ui_MainWindow
+from new_pupil import NewPupilWindow
 
 
 # класс, созданный для уцентрирования ячеек
@@ -23,16 +24,23 @@ class EditGroupWindow(QMainWindow, Ui_MainWindow):
 
     def contextMenuEvent(self, event):
         contextMenu = QMenu(self)
-        add_pupil = contextMenu.addAction('Добавить ученика')
-        statistic = contextMenu.addAction('Открыть статистику ученика')
-        action = contextMenu.exec_(self.mapToGlobal(event.pos()))
-        print(event)
+
+        self.add_pupil_action = QAction('Добавить ученика', self)
+        self.statistic_action = QAction('Статистика ученика', self)
+
+        self.add_pupil = contextMenu.addAction(self.add_pupil_action)
+        self.statistic = contextMenu.addAction(self.statistic_action)
+
+        self.add_pupil_action.triggered.connect(self.new_pupil)
+        self.statistic_action.triggered.connect(lambda: print('2'))
+
+        self.action = contextMenu.exec_(self.mapToGlobal(event.pos()))
 
     def update_table(self, id_group: int):
         with sqlite3.connect('main_db.db') as con:
             cur = con.cursor()
-            self.pupils = cur.execute("""SELECT id,name,second_name,attendance FROM pupils 
-                WHERE id_group = ?""", (id_group,)).fetchall()
+            self.pupils = sorted(cur.execute("""SELECT id,name,second_name,attendance FROM pupils 
+                WHERE id_group = ?""", (id_group,)).fetchall(), key=lambda x: x[1])
             self.timetable = cur.execute("""SELECT days_work,title FROM groups WHERE id = ?""", (id_group,)).fetchone()
 
             self.setWindowTitle(self.timetable[1])
@@ -59,6 +67,10 @@ class EditGroupWindow(QMainWindow, Ui_MainWindow):
 
             self.tableWidget.resizeRowsToContents()
             self.tableWidget.resizeColumnsToContents()
+
+    def new_pupil(self):
+        wndw = NewPupilWindow(self.windowTitle())
+        wndw.show()
 
 
 if __name__ == '__main__':
