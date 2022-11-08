@@ -3,10 +3,12 @@ import sqlite3
 import sys
 
 from PyQt5 import QtWidgets, QtCore
-from PyQt5.QtWidgets import QMainWindow, QApplication, QTableWidgetItem
+from PyQt5.QtWidgets import QMainWindow, QApplication, QTableWidgetItem, QMenu
+
 from forms.one_groupUI import Ui_MainWindow
 
 
+# класс, созданный для уцентрирования ячеек
 class AlignDelegate(QtWidgets.QStyledItemDelegate):
     def initStyleOption(self, option, index):
         super(AlignDelegate, self).initStyleOption(option, index)
@@ -19,6 +21,13 @@ class EditGroupWindow(QMainWindow, Ui_MainWindow):
         self.setupUi(self)
         self.update_table(id_group)
 
+    def contextMenuEvent(self, event):
+        contextMenu = QMenu(self)
+        add_pupil = contextMenu.addAction('Добавить ученика')
+        statistic = contextMenu.addAction('Открыть статистику ученика')
+        action = contextMenu.exec_(self.mapToGlobal(event.pos()))
+        print(event)
+
     def update_table(self, id_group: int):
         with sqlite3.connect('main_db.db') as con:
             cur = con.cursor()
@@ -30,7 +39,7 @@ class EditGroupWindow(QMainWindow, Ui_MainWindow):
             self.tableWidget.setRowCount(len(self.pupils))
             self.tableWidget.setColumnCount(len(self.timetable[0].split(',')) + 1)
             self.tableWidget.setHorizontalHeaderLabels(['.'.join(i.split('.')[:2]) for i in self.timetable[0].split(',')])
-            self.tableWidget.setVerticalHeaderLabels([i[1] + ' '+ i[2] for i in self.pupils])
+            self.tableWidget.setVerticalHeaderLabels([i[1] + ' ' + i[2] for i in self.pupils])
 
             for i, pupil in enumerate(self.pupils):
                 for j, day in enumerate(pupil[-1].split(',')):
