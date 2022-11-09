@@ -22,6 +22,7 @@ class EditGroupWindow(QMainWindow, Ui_MainWindow):
         self.setupUi(self)
         self.update_table(id_group)
 
+
     def contextMenuEvent(self, event):
         contextMenu = QMenu(self)
 
@@ -43,30 +44,29 @@ class EditGroupWindow(QMainWindow, Ui_MainWindow):
                 WHERE id_group = ?""", (id_group,)).fetchall(), key=lambda x: x[1])
             self.timetable = cur.execute("""SELECT days_work,title FROM groups WHERE id = ?""", (id_group,)).fetchone()
 
-            self.setWindowTitle(self.timetable[1])
-            self.tableWidget.setRowCount(len(self.pupils))
-            self.tableWidget.setColumnCount(len(self.timetable[0].split(',')) + 1)
-            self.tableWidget.setHorizontalHeaderLabels(['.'.join(i.split('.')[:2]) for i in self.timetable[0].split(',')])
-            self.tableWidget.setVerticalHeaderLabels([i[1] + ' ' + i[2] for i in self.pupils])
+        self.setWindowTitle(self.timetable[1])
+        self.tableWidget.setRowCount(len(self.pupils))
+        self.tableWidget.setColumnCount(len(self.timetable[0].split(',')) + 1)
+        self.tableWidget.setHorizontalHeaderLabels(['.'.join(i.split('.')[:2]) for i in self.timetable[0].split(',')])
+        self.tableWidget.setVerticalHeaderLabels([i[1] + ' ' + i[2] for i in self.pupils])
 
-            for i, pupil in enumerate(self.pupils):
-                for j, day in enumerate(pupil[-1].split(',')):
-                    delegate = AlignDelegate(self.tableWidget)
-                    self.tableWidget.setItemDelegateForColumn(j, delegate)
+        for i, pupil in enumerate(self.pupils):
+            for j, day in enumerate(pupil[-1].split(',')):
+                delegate = AlignDelegate(self.tableWidget)
+                self.tableWidget.setItemDelegateForColumn(j, delegate)
+                # TODO: заменить внутренности таблицы на другие символы
+                if day == '2':
+                    self.tableWidget.setItem(i, j, QTableWidgetItem('2'))
+                elif day == '1':
+                    self.tableWidget.setItem(i, j, QTableWidgetItem('1'))
+                # отсутствовал на тех занятиях, когда не занесли в базу (серый фон)
+                elif day == 'X':
+                    self.tableWidget.setItem(i, j, QTableWidgetItem('X'))
+                else:
+                    self.tableWidget.setItem(i, j, QTableWidgetItem(' '))
 
-                    # TODO: заменить внутренности таблицы на другие символы
-                    if day == '2':
-                        self.tableWidget.setItem(i, j, QTableWidgetItem('2'))
-                    elif day == '1':
-                        self.tableWidget.setItem(i, j, QTableWidgetItem('1'))
-                    # отсутствовал на тех занятиях, когда не занесли в базу (серый фон)
-                    elif day == 'X':
-                        self.tableWidget.setItem(i, j, QTableWidgetItem('X'))
-                    else:
-                        self.tableWidget.setItem(i, j, QTableWidgetItem(' '))
-
-            self.tableWidget.resizeRowsToContents()
-            self.tableWidget.resizeColumnsToContents()
+        self.tableWidget.resizeRowsToContents()
+        self.tableWidget.resizeColumnsToContents()
 
     def new_pupil(self):
         wndw = NewPupilWindow(self.windowTitle())
@@ -75,7 +75,7 @@ class EditGroupWindow(QMainWindow, Ui_MainWindow):
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    main_app = EditGroupWindow(8)
+    main_app = EditGroupWindow(1)
     main_app.show()
     sys.exit(app.exec_())
 

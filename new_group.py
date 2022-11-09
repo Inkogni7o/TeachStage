@@ -2,7 +2,7 @@
 import sqlite3
 import sys
 import holidays
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 
 from PyQt5.QtCore import QTime
 from PyQt5.QtWidgets import QApplication, QWidget
@@ -35,7 +35,6 @@ class NewGroupWindow(QWidget, Ui_Form):
             3: 'Четверг', 4: 'Пятница', 5: 'Суббота', 6: 'Воскресенье'
         }
 
-
     def open_time(self):
         if self.main_dict[self.sender().text()][0].isEnabled() == 0:
             self.main_dict[self.sender().text()][0].setEnabled(True)
@@ -49,29 +48,33 @@ class NewGroupWindow(QWidget, Ui_Form):
             self.days.pop(self.days.index(self.sender().text()))
 
     def new_group(self):
-        all_work_days, end_of_school_year = (list(),
-            datetime(datetime.now().year + 1 if datetime.now().month > 5 else datetime.now().year, 6, 1))
-        day = datetime.now()
-        while day.month != end_of_school_year.month or day.day != end_of_school_year.day:
+        all_work_days, end = (list(),
+                              date(year=self.dateEdit_2.date().year(), month=self.dateEdit_2.date().month(),
+                                   day=self.dateEdit_2.date().day()))
+        day = date(year=self.dateEdit.date().year(), month=self.dateEdit.date().month(),
+                   day=self.dateEdit.date().day())
+        while day.month != end.month or day.day != end.day:
             for holiday in [i[0] for i in holidays.RU(years=datetime.now().year).items()]:
                 if holiday.day == day.day and holiday.month == day.month:
                     day += timedelta(days=1)
                     continue
             if self.main_dict[day.weekday()] in self.days:
-                all_work_days.append(str(day.day) + '.' + str(day.month) + '.' + str(day.year))
+                all_work_days.append(str(day.day).rjust(2, '0') + '.' +
+                                     str(day.month).rjust(2, '0') + '.' + str(day.year))
             day += timedelta(days=1)
 
         with sqlite3.connect('main_db.db') as con:
             cur = con.cursor()
             cur.execute("""INSERT INTO groups(title, teacher_login, max_count, days_of_the_week, starts,
-             ends, day_start, days_work) VALUES(?,?,?,?,?,?,?,?)""",
+             ends, day_start, day_end, days_work) VALUES(?,?,?,?,?,?,?,?,?)""",
                         (self.name_group_input.text(),
                          self.login,
                          int(self.count_pupils_input.text()),
                          ' '.join(self.days),
                          ' '.join([self.main_dict[i][0].text() for i in self.days]),
                          ' '.join([self.main_dict[i][1].text() for i in self.days]),
-                         str(datetime.now().day) + '.' + str(datetime.now().month),
+                         str(self.dateEdit.date().day())+ '.' + str(self.dateEdit.date().month()),
+                         str(self.dateEdit_2.date().day()) + '.' + str(self.dateEdit_2.date().month()),
                          ','.join(all_work_days)))
             con.commit()
             self.close()

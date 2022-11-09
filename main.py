@@ -32,7 +32,7 @@ class MainFrom(QWidget):
             cur = con.cursor()
             result = cur.execute("""SELECT password FROM users WHERE login=?""",
                                  (str(self.login.login_input.text()),)).fetchone()
-            if self.login.password_input.text() in result:
+            if self.login.password_input.text() == str(result[0]):
                 self.user = self.login.login_input.text()
                 self.to_today()
 
