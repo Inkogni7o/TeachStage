@@ -23,6 +23,7 @@ class TodayWindow(QMainWindow, Ui_MainWindow):
         self.calendar.setSelectedDate(QDate(*self.today))
         self.display_groups()
         self.calendar.clicked.connect(self.display_groups)
+        self.today_groups.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
 
     def display_groups(self):
         for day in holidays.RU(years=dt.datetime.now().year).items():
@@ -37,20 +38,21 @@ class TodayWindow(QMainWindow, Ui_MainWindow):
             with sqlite3.connect('main_db.db') as con:
                 cur = con.cursor()
                 self.result = cur.execute("""SELECT title, days_of_the_week, starts, ends, id FROM groups 
-                    WHERE days_work LIKE ?""",
-                    (f'%{current_date.day()}.{current_date.month()}.{current_date.year()}%',)).fetchall()
+                    WHERE days_work LIKE ? AND teacher_login=?""",
+                    (f'%{str(current_date.day()).rjust(2, "0")}.'
+                     f'{str(current_date.month()).rjust(2, "0")}.'
+                     f'{current_date.year()}%', self.login)).fetchall()
+
             if self.result:
                 for group in self.result:
                     day_of_the_week = DECODE_DAYS[self.calendar.selectedDate().dayOfWeek()]
                     if day_of_the_week in group[1].split():
-                        print(day_of_the_week, group[1].split(), self.result)
                         self.today_groups.setRowCount(len(self.result))
                         self.today_groups.setItem(self.result.index(group), 0, QTableWidgetItem(group[0]))
                         time = QTableWidgetItem(group[2].split()[group[1].split().index(day_of_the_week)] + ' - '
                                                 + group[3].split()[group[1].split().index(day_of_the_week)])
                         self.today_groups.setItem(self.result.index(group), 1, time)
 
-                        self.today_groups.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
                         self.today_groups.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
                         self.today_groups.scrollToItem(time)
                 self.today_groups.viewport().installEventFilter(self)

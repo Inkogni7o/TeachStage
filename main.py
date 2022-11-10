@@ -11,10 +11,8 @@ from today_activity import TodayWindow
 class MainFrom(QWidget):
     def __init__(self):
         super(MainFrom, self).__init__()
-        self.login = LogWindow()
-        self.login.show()
-        self.login.register_btn.clicked.connect(self.to_registration)
-        self.login.login_btn.clicked.connect(self.login_user)
+        self.reg = RegWindow()
+        self.to_login()
 
     def to_registration(self):
         self.reg = RegWindow()
@@ -24,6 +22,13 @@ class MainFrom(QWidget):
 
     def to_login(self):
         self.reg.close()
+        self.login = LogWindow()
+        self.login.show()
+        self.login.register_btn.clicked.connect(self.to_registration)
+        self.login.login_btn.clicked.connect(self.login_user)
+
+    def exit_from_profile(self):
+        self.today.close()
         self.login = LogWindow()
         self.login.show()
 
@@ -40,6 +45,7 @@ class MainFrom(QWidget):
         self.today = TodayWindow(self.user)
         self.today.show()
         self.login.close()
+        self.today.exit.triggered.connect(self.exit_from_profile)
 
 
 if __name__ == '__main__':

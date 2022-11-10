@@ -20,20 +20,20 @@ class EditGroupWindow(QMainWindow, Ui_MainWindow):
     def __init__(self, id_group: int):
         super(EditGroupWindow, self).__init__()
         self.setupUi(self)
-        self.update_table(id_group)
-
+        self.id_group = id_group
+        self.update_table(self.id_group)
 
     def contextMenuEvent(self, event):
         contextMenu = QMenu(self)
-
+        # TODO: сделать окно статистики ученика
         self.add_pupil_action = QAction('Добавить ученика', self)
-        self.statistic_action = QAction('Статистика ученика', self)
+        # self.statistic_action = QAction('Статистика ученика', self)
 
         self.add_pupil = contextMenu.addAction(self.add_pupil_action)
-        self.statistic = contextMenu.addAction(self.statistic_action)
+        # self.statistic = contextMenu.addAction(self.statistic_action)
 
         self.add_pupil_action.triggered.connect(self.new_pupil)
-        self.statistic_action.triggered.connect(lambda: print('2'))
+        # self.statistic_action.triggered.connect(lambda: print('2'))
 
         self.action = contextMenu.exec_(self.mapToGlobal(event.pos()))
 
@@ -71,11 +71,12 @@ class EditGroupWindow(QMainWindow, Ui_MainWindow):
     def new_pupil(self):
         wndw = NewPupilWindow(self.windowTitle())
         wndw.show()
+        wndw.buttonBox.accepted.connect(lambda: self.update_table(self.id_group))
 
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    main_app = EditGroupWindow(1)
+    main_app = EditGroupWindow(6)
     main_app.show()
     sys.exit(app.exec_())
 

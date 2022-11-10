@@ -4,7 +4,7 @@ import sys
 import holidays
 from datetime import datetime, timedelta, date
 
-from PyQt5.QtCore import QTime
+from PyQt5.QtCore import QTime, QDate
 from PyQt5.QtWidgets import QApplication, QWidget
 from forms.add_groupUI import Ui_Form
 
@@ -15,6 +15,9 @@ class NewGroupWindow(QWidget, Ui_Form):
         self.login = login
         self.days = list()
         self.setupUi(self)
+        self.setWindowTitle('Добавление новой группы')
+        self.dateEdit.setDate(QDate(datetime.now().year, datetime.now().month, datetime.now().day))
+        self.dateEdit_2.setDate(QDate(datetime.now().year, datetime.now().month, datetime.now().day))
         self.buttonBox.rejected.connect(lambda: self.close())
         self.buttonBox.accepted.connect(self.new_group)
 
@@ -73,7 +76,7 @@ class NewGroupWindow(QWidget, Ui_Form):
                          ' '.join(self.days),
                          ' '.join([self.main_dict[i][0].text() for i in self.days]),
                          ' '.join([self.main_dict[i][1].text() for i in self.days]),
-                         str(self.dateEdit.date().day())+ '.' + str(self.dateEdit.date().month()),
+                         str(self.dateEdit.date().day()) + '.' + str(self.dateEdit.date().month()),
                          str(self.dateEdit_2.date().day()) + '.' + str(self.dateEdit_2.date().month()),
                          ','.join(all_work_days)))
             con.commit()
