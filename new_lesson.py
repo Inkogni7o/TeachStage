@@ -13,15 +13,26 @@ class NewLessonWindow(QWidget, Ui_Form):
 
     def new_lesson(self, id_group: int):
         with sqlite3.connect('main_db.db') as con:
-            print(id_group)
             cur = con.cursor()
-            old_dates = cur.execute("""SELECT additional_work_days FROM groups WHERE id=?""",
-                                    (id_group,)).fetchone()[0]
-            cur.execute("""UPDATE groups SET additional_work_days=? WHERE id=?""",
-                        (old_dates + f'{str(self.calendar.selectedDate().day()).rjust(2, "0")}.'
-                                     f'{str(self.calendar.selectedDate().month()).rjust(2, "0")}.'
-                                     f'{self.calendar.selectedDate().year()}'
-                                     f' - {self.timeEdit.text()}/!\\', id_group))
+            old_dates = cur.execute("""SELECT days_work FROM groups WHERE id=?""", (id_group,)).fetchone()[0]
+            new_dates = sorted(old_dates.split(',') + [f'{str(self.calendar.selectedDate().day()).rjust(2, "0")}.'
+                                                       f'{str(self.calendar.selectedDate().month()).rjust(2, "0")}.'
+                                                       f'{self.calendar.selectedDate().year()}.'
+                                                       f'{self.timeEdit.text()}'],
+                               key=lambda x: (int(x.split('.')[2]), int(x.split('.')[1]), int(x.split('.')[0])))
+            new_day_index = new_dates.index(f'{str(self.calendar.selectedDate().day()).rjust(2, "0")}.'
+                                            f'{str(self.calendar.selectedDate().month()).rjust(2, "0")}.'
+                                            f'{self.calendar.selectedDate().year()}.'
+                                            f'{self.timeEdit.text()}')
+            cur.execute("""UPDATE groups SET days_work=? WHERE id=?""",
+                        (','.join(new_dates), id_group))
+            pupils = cur.execute("""SELECT id,attendance FROM pupils WHERE id_group=?""", (id_group,)).fetchall()
+            for pupil in pupils:
+                print(pupil, new_day_index)
+                new_attendance = (','.join(pupil[1].split(',')[:new_day_index]) + ', ,'
+                                  + ','.join(pupil[1].split(',')[new_day_index:]))
+                if new_attendance[-1] != ',':
+                    new_attendance += ','
+                cur.execute("""UPDATE pupils SET attendance=? WHERE id_group=?""", (new_attendance, id_group))
             con.commit()
             self.close()
-

@@ -3,6 +3,7 @@ import sqlite3
 import sys
 
 from PyQt5 import QtWidgets, QtCore
+from PyQt5.QtGui import QColor
 from PyQt5.QtWidgets import QMainWindow, QApplication, QTableWidgetItem, QMenu, QAction, QAbstractItemView
 
 from forms.one_groupUI import Ui_MainWindow
@@ -63,31 +64,31 @@ class EditGroupWindow(QMainWindow, Ui_MainWindow):
             cur = con.cursor()
             self.pupils = sorted(cur.execute("""SELECT id,name,second_name,attendance FROM pupils 
                 WHERE id_group = ?""", (id_group,)).fetchall(), key=lambda x: x[1])
-            self.timetable = cur.execute("""SELECT days_work,title,additional_work_days
-             FROM groups WHERE id = ?""", (id_group,)).fetchone()
+            self.timetable = cur.execute("""SELECT days_work,title FROM groups WHERE id = ?""", (id_group,)).fetchone()
 
-        self.all_days = sorted(self.timetable[0].split(',') +
-                         ['.'.join(i.split('.')[:3]) for i in self.timetable[-1].split('/!\\') if i],
-                               key=lambda x: (x.split('.')[2], x.split('.')[1], x.split('.')[0]))
         self.setWindowTitle(self.timetable[1])
         self.tableWidget.setRowCount(len(self.pupils))
-        self.tableWidget.setColumnCount(len(self.timetable[0].split(',')) +
-                                        len([i for i in self.timetable[-1].split('/!\\') if i]))
-        self.tableWidget.setHorizontalHeaderLabels(['.'.join(i.split('.')[:2]) for i in self.all_days])
-        self.tableWidget.setVerticalHeaderLabels([i[1] + ' ' + i[2] for i in self.pupils])
+        self.tableWidget.setColumnCount(len(self.timetable[0].split(',')))
+        self.tableWidget.setHorizontalHeaderLabels(['.'.join(i.split('.')[:2]) for i in self.timetable[0].split(',')])
+        self.tableWidget.setVerticalHeaderLabels([str(i[1]) + ' ' + str(i[2]) for i in self.pupils])
 
         for i, pupil in enumerate(self.pupils):
             for j, day in enumerate(pupil[-1].split(',')):
                 delegate = AlignDelegate(self.tableWidget)
                 self.tableWidget.setItemDelegateForColumn(j, delegate)
-                # TODO: заменить внутренности таблицы на другие символы
                 if day == '2':
-                    self.tableWidget.setItem(i, j, QTableWidgetItem('2'))
+                    self.tableWidget.setItem(i, j, QTableWidgetItem('✔'))
+                    self.tableWidget.item(i, j).setBackground(QColor(0, 255, 0))
                 elif day == '1':
-                    self.tableWidget.setItem(i, j, QTableWidgetItem('1'))
+                    self.tableWidget.setItem(i, j, QTableWidgetItem(' '))
+                    self.tableWidget.item(i, j).setBackground(QColor(255, 255, 51))
+                elif day == '0':
+                    self.tableWidget.setItem(i, j, QTableWidgetItem('❌'))
+                    self.tableWidget.item(i, j).setBackground(QColor(255, 0, 0))
                 # отсутствовал на тех занятиях, когда не занесли в базу (серый фон)
                 elif day == 'X':
-                    self.tableWidget.setItem(i, j, QTableWidgetItem('X'))
+                    self.tableWidget.setItem(i, j, QTableWidgetItem(' '))
+                    self.tableWidget.item(i, j).setBackground(QColor(160, 160, 160))
                 else:
                     self.tableWidget.setItem(i, j, QTableWidgetItem(' '))
 
@@ -105,19 +106,27 @@ class EditGroupWindow(QMainWindow, Ui_MainWindow):
             self.wndw.show()
             self.wndw.buttonBox.accepted.connect(lambda: self.update_table(self.id_group))
         if mode == 'd':
+            current_index = self.tableWidget.currentColumn()
             with sqlite3.connect('main_db.db') as con:
                 cur = con.cursor()
                 old_days_work = cur.execute("""SELECT days_work FROM groups WHERE id=?""",
                                             (self.id_group,)).fetchone()[0].split(',')
-                old_days_work.pop(self.tableWidget.currentColumn())
+                old_days_work.pop(current_index)
                 new_days_work = ','.join(old_days_work)
                 cur.execute("""UPDATE groups SET days_work=? WHERE id=?""", (new_days_work, self.id_group,))
+
+                pupils = cur.execute("""SELECT id,attendance FROM pupils WHERE id_group=?""", (self.id_group,))
+                for pupil in pupils:
+                    new_attendance = pupil[1].split(',')
+                    new_attendance.pop(current_index)
+                    cur.execute("""UPDATE pupils SET attendance=? WHERE id=?""",
+                                (','.join(new_attendance), pupil[0]))
                 con.commit()
-                self.tableWidget.removeColumn(self.tableWidget.currentColumn())
+                self.tableWidget.removeColumn(current_index)
 
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    main_app = EditGroupWindow(6)
+    main_app = EditGroupWindow(7)
     main_app.show()
     sys.exit(app.exec_())
