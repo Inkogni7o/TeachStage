@@ -3,7 +3,7 @@ import sqlite3
 import sys
 
 from PyQt5 import QtWidgets, QtCore
-from PyQt5.QtWidgets import QMainWindow, QApplication, QTableWidgetItem, QMenu, QAction
+from PyQt5.QtWidgets import QMainWindow, QApplication, QTableWidgetItem, QMenu, QAction, QAbstractItemView
 
 from forms.one_groupUI import Ui_MainWindow
 from new_pupil import NewPupilWindow
@@ -23,17 +23,29 @@ class EditGroupWindow(QMainWindow, Ui_MainWindow):
         self.id_group = id_group
         self.update_table(self.id_group)
 
+        self.tableWidget.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.tableWidget.setSelectionMode(QAbstractItemView.SingleSelection)
+
     def contextMenuEvent(self, event):
         contextMenu = QMenu(self)
         # TODO: сделать окно статистики ученика
         self.add_pupil_action = QAction('Добавить ученика', self)
+        self.add_date_action = QAction('Добавить занятие', self)
+        self.redact_date_action = QAction('Редактировать занятие', self)
+        self.delete_date_action = QAction('Удалить занятие', self)
         # self.statistic_action = QAction('Статистика ученика', self)
-
-        self.add_pupil = contextMenu.addAction(self.add_pupil_action)
-        # self.statistic = contextMenu.addAction(self.statistic_action)
 
         self.add_pupil_action.triggered.connect(self.new_pupil)
         # self.statistic_action.triggered.connect(lambda: print('2'))
+        # self.add_date.triggered.connect()
+        # self.redact_date.triggered.connect()
+        self.delete_date_action.triggered.connect(self.del_date)
+
+        self.add_pupil = contextMenu.addAction(self.add_pupil_action)
+        self.add_date = contextMenu.addAction(self.add_date_action)
+        self.redact_date = contextMenu.addAction(self.redact_date_action)
+        self.delete_date = contextMenu.addAction(self.delete_date_action)
+        # self.statistic = contextMenu.addAction(self.statistic_action)
 
         self.action = contextMenu.exec_(self.mapToGlobal(event.pos()))
 
@@ -72,6 +84,17 @@ class EditGroupWindow(QMainWindow, Ui_MainWindow):
         wndw = NewPupilWindow(self.windowTitle())
         wndw.show()
         wndw.buttonBox.accepted.connect(lambda: self.update_table(self.id_group))
+
+    def del_date(self):
+        with sqlite3.connect('main_db.db') as con:
+            cur = con.cursor()
+            old_days_work = cur.execute("""SELECT days_work FROM groups WHERE id=?""",
+                                        (self.id_group,)).fetchone()[0].split(',')
+            old_days_work.pop(self.tableWidget.currentColumn())
+            new_days_work = ','.join(old_days_work)
+            cur.execute("""UPDATE groups SET days_work=? WHERE id=?""", (new_days_work, self.id_group,))
+            con.commit()
+        self.tableWidget.removeColumn(self.tableWidget.currentColumn())
 
 
 if __name__ == '__main__':
