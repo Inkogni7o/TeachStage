@@ -7,6 +7,7 @@ from PyQt5.QtWidgets import QMainWindow, QApplication, QTableWidgetItem, QMenu, 
 
 from forms.one_groupUI import Ui_MainWindow
 from new_pupil import NewPupilWindow
+from new_lesson import NewLessonWindow
 
 
 # класс, созданный для уцентрирования ячеек
@@ -30,22 +31,30 @@ class EditGroupWindow(QMainWindow, Ui_MainWindow):
         contextMenu = QMenu(self)
         # TODO: сделать окно статистики ученика
         self.add_pupil_action = QAction('Добавить ученика', self)
+        self.statistic_action = QAction('Статистика ученика', self)
+        self.delete_pupil_action = QAction('Удалить ученика', self)
+
+        self.separator = QAction(self)
+        self.separator.setSeparator(True)
+
         self.add_date_action = QAction('Добавить занятие', self)
-        self.redact_date_action = QAction('Редактировать занятие', self)
+        self.redact_date_action = QAction('Перенести занятие', self)
         self.delete_date_action = QAction('Удалить занятие', self)
-        # self.statistic_action = QAction('Статистика ученика', self)
 
         self.add_pupil_action.triggered.connect(self.new_pupil)
-        # self.statistic_action.triggered.connect(lambda: print('2'))
-        # self.add_date.triggered.connect()
+        # self.statistic_action.triggered.connect()
+        # self.delete_pupil.triggered.connect()
+        self.add_date_action.triggered.connect(lambda: self.configure_date('n'))
         # self.redact_date.triggered.connect()
-        self.delete_date_action.triggered.connect(self.del_date)
+        self.delete_date_action.triggered.connect(lambda: self.configure_date('d'))
 
-        self.add_pupil = contextMenu.addAction(self.add_pupil_action)
-        self.add_date = contextMenu.addAction(self.add_date_action)
-        self.redact_date = contextMenu.addAction(self.redact_date_action)
-        self.delete_date = contextMenu.addAction(self.delete_date_action)
-        # self.statistic = contextMenu.addAction(self.statistic_action)
+        contextMenu.addAction(self.add_pupil_action)
+        contextMenu.addAction(self.statistic_action)
+        contextMenu.addAction(self.delete_pupil_action)
+        contextMenu.addAction(self.separator)
+        contextMenu.addAction(self.add_date_action)
+        contextMenu.addAction(self.redact_date_action)
+        contextMenu.addAction(self.delete_date_action)
 
         self.action = contextMenu.exec_(self.mapToGlobal(event.pos()))
 
@@ -54,12 +63,17 @@ class EditGroupWindow(QMainWindow, Ui_MainWindow):
             cur = con.cursor()
             self.pupils = sorted(cur.execute("""SELECT id,name,second_name,attendance FROM pupils 
                 WHERE id_group = ?""", (id_group,)).fetchall(), key=lambda x: x[1])
-            self.timetable = cur.execute("""SELECT days_work,title FROM groups WHERE id = ?""", (id_group,)).fetchone()
+            self.timetable = cur.execute("""SELECT days_work,title,additional_work_days
+             FROM groups WHERE id = ?""", (id_group,)).fetchone()
 
+        self.all_days = sorted(self.timetable[0].split(',') +
+                         ['.'.join(i.split('.')[:3]) for i in self.timetable[-1].split('/!\\') if i],
+                               key=lambda x: (x.split('.')[2], x.split('.')[1], x.split('.')[0]))
         self.setWindowTitle(self.timetable[1])
         self.tableWidget.setRowCount(len(self.pupils))
-        self.tableWidget.setColumnCount(len(self.timetable[0].split(',')) + 1)
-        self.tableWidget.setHorizontalHeaderLabels(['.'.join(i.split('.')[:2]) for i in self.timetable[0].split(',')])
+        self.tableWidget.setColumnCount(len(self.timetable[0].split(',')) +
+                                        len([i for i in self.timetable[-1].split('/!\\') if i]))
+        self.tableWidget.setHorizontalHeaderLabels(['.'.join(i.split('.')[:2]) for i in self.all_days])
         self.tableWidget.setVerticalHeaderLabels([i[1] + ' ' + i[2] for i in self.pupils])
 
         for i, pupil in enumerate(self.pupils):
@@ -85,16 +99,21 @@ class EditGroupWindow(QMainWindow, Ui_MainWindow):
         wndw.show()
         wndw.buttonBox.accepted.connect(lambda: self.update_table(self.id_group))
 
-    def del_date(self):
-        with sqlite3.connect('main_db.db') as con:
-            cur = con.cursor()
-            old_days_work = cur.execute("""SELECT days_work FROM groups WHERE id=?""",
-                                        (self.id_group,)).fetchone()[0].split(',')
-            old_days_work.pop(self.tableWidget.currentColumn())
-            new_days_work = ','.join(old_days_work)
-            cur.execute("""UPDATE groups SET days_work=? WHERE id=?""", (new_days_work, self.id_group,))
-            con.commit()
-        self.tableWidget.removeColumn(self.tableWidget.currentColumn())
+    def configure_date(self, mode: str):
+        if mode == 'n':
+            self.wndw = NewLessonWindow(self.id_group)
+            self.wndw.show()
+            self.wndw.buttonBox.accepted.connect(lambda: self.update_table(self.id_group))
+        if mode == 'd':
+            with sqlite3.connect('main_db.db') as con:
+                cur = con.cursor()
+                old_days_work = cur.execute("""SELECT days_work FROM groups WHERE id=?""",
+                                            (self.id_group,)).fetchone()[0].split(',')
+                old_days_work.pop(self.tableWidget.currentColumn())
+                new_days_work = ','.join(old_days_work)
+                cur.execute("""UPDATE groups SET days_work=? WHERE id=?""", (new_days_work, self.id_group,))
+                con.commit()
+                self.tableWidget.removeColumn(self.tableWidget.currentColumn())
 
 
 if __name__ == '__main__':
@@ -102,4 +121,3 @@ if __name__ == '__main__':
     main_app = EditGroupWindow(6)
     main_app.show()
     sys.exit(app.exec_())
-
