@@ -26,13 +26,14 @@ class NewLessonWindow(QWidget, Ui_Form):
                                             f'{self.timeEdit.text()}')
             cur.execute("""UPDATE groups SET days_work=? WHERE id=?""",
                         (','.join(new_dates), id_group))
+
             pupils = cur.execute("""SELECT id,attendance FROM pupils WHERE id_group=?""", (id_group,)).fetchall()
             for pupil in pupils:
-                print(pupil, new_day_index)
-                new_attendance = (','.join(pupil[1].split(',')[:new_day_index]) + ', ,'
-                                  + ','.join(pupil[1].split(',')[new_day_index:]))
-                if new_attendance[-1] != ',':
-                    new_attendance += ','
-                cur.execute("""UPDATE pupils SET attendance=? WHERE id_group=?""", (new_attendance, id_group))
+                print(pupil[1], new_day_index)
+                new_attendance = pupil[1].split(',')
+                new_attendance.insert(new_day_index, '.')
+                new_attendance = ','.join(new_attendance)
+                print(new_attendance)
+                cur.execute("""UPDATE pupils SET attendance=? WHERE id=?""", (new_attendance, pupil[0]))
             con.commit()
             self.close()

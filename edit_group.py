@@ -83,7 +83,7 @@ class EditGroupWindow(QMainWindow, Ui_MainWindow):
                     self.tableWidget.setItem(i, j, QTableWidgetItem('✔'))
                     self.tableWidget.item(i, j).setBackground(QColor(0, 255, 0))
                 elif day == '1':
-                    self.tableWidget.setItem(i, j, QTableWidgetItem(' '))
+                    self.tableWidget.setItem(i, j, QTableWidgetItem('1'))
                     self.tableWidget.item(i, j).setBackground(QColor(255, 255, 51))
                 elif day == '0':
                     self.tableWidget.setItem(i, j, QTableWidgetItem('❌'))
@@ -143,6 +143,6 @@ class EditGroupWindow(QMainWindow, Ui_MainWindow):
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    main_app = EditGroupWindow(12)
+    main_app = EditGroupWindow(17)
     main_app.show()
     sys.exit(app.exec_())

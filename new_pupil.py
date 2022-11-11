@@ -30,7 +30,7 @@ class NewPupilWindow(QWidget, Ui_Form):
                                                day=int(day.split('.')[0]) + 1):
                 attendance += 'X,'
             else:
-                attendance += ' ,'
+                attendance += '.,'
         with sqlite3.connect('main_db.db') as con:
             cur = con.cursor()
             cur.execute("""INSERT INTO pupils(id_group, name, second_name, attendance) VALUES(?,?,?,?)""",
