@@ -27,6 +27,9 @@ class EditGroupWindow(QMainWindow, Ui_MainWindow):
 
         self.tableWidget.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.tableWidget.setSelectionMode(QAbstractItemView.SingleSelection)
+        self.was_2.clicked.connect(lambda: self.set_attendance(2))
+        self.was_1.clicked.connect(lambda: self.set_attendance(1))
+        self.was_0.clicked.connect(lambda: self.set_attendance(0))
 
     def contextMenuEvent(self, event):
         contextMenu = QMenu(self)
@@ -124,9 +127,22 @@ class EditGroupWindow(QMainWindow, Ui_MainWindow):
                 con.commit()
                 self.tableWidget.removeColumn(current_index)
 
+    def set_attendance(self, number: int):
+        if self.tableWidget.selectedItems():
+            with sqlite3.connect('main_db.db') as con:
+                cur = con.cursor()
+                person = self.tableWidget.verticalHeaderItem(self.tableWidget.currentRow()).text()
+                pupil_attendance = cur.execute("""SELECT attendance FROM pupils WHERE name=? AND second_name=?""",
+                                               (person.split()[1], person.split()[0])).fetchone()[0].split(',')
+                pupil_attendance[self.tableWidget.currentColumn()] = str(number)
+                cur.execute("""UPDATE pupils SET attendance=? WHERE name=? and second_name=?""",
+                            (','.join(pupil_attendance), person.split()[1], person.split()[0]))
+                con.commit()
+                self.update_table(self.id_group)
+
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    main_app = EditGroupWindow(7)
+    main_app = EditGroupWindow(12)
     main_app.show()
     sys.exit(app.exec_())
