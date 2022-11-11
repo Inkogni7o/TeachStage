@@ -140,11 +140,12 @@ class EditGroupWindow(QMainWindow, Ui_MainWindow):
             with sqlite3.connect('main_db.db') as con:
                 cur = con.cursor()
                 person = self.tableWidget.verticalHeaderItem(self.tableWidget.currentRow()).text()
+                print(person.split()[0], person.split()[1])
                 pupil_attendance = cur.execute("""SELECT attendance FROM pupils WHERE name=? AND second_name=?""",
-                                               (person.split()[1], person.split()[0])).fetchone()[0].split(',')
+                                               (person.split()[0], person.split()[1])).fetchone()[0].split(',')
                 pupil_attendance[self.tableWidget.currentColumn()] = str(number)
                 cur.execute("""UPDATE pupils SET attendance=? WHERE name=? and second_name=?""",
-                            (','.join(pupil_attendance), person.split()[1], person.split()[0]))
+                            (','.join(pupil_attendance), person.split()[0], person.split()[1]))
                 con.commit()
                 self.update_table(self.id_group)
 
