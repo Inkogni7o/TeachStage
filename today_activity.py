@@ -34,37 +34,52 @@ class TodayWindow(QMainWindow, Ui_MainWindow):
                 self.today_groups.setItem(0, 1, QTableWidgetItem(day[-1]))
                 break
         else:
+            day_of_the_week = DECODE_DAYS[self.calendar.selectedDate().dayOfWeek()]
             current_date = self.calendar.selectedDate()
             with sqlite3.connect('main_db.db') as con:
                 cur = con.cursor()
-                self.result = cur.execute("""SELECT title, days_of_the_week, starts, ends, id FROM groups 
+                self.result = cur.execute("""SELECT title, days_of_the_week, starts, ends, id, days_work FROM groups 
                     WHERE days_work LIKE ? AND teacher_login=?""",
-                    (f'%{str(current_date.day()).rjust(2, "0")}.'
-                     f'{str(current_date.month()).rjust(2, "0")}.'
-                     f'{current_date.year()}%', self.login)).fetchall()
+                                          (f'%{str(current_date.day()).rjust(2, "0")}.'
+                                           f'{str(current_date.month()).rjust(2, "0")}.'
+                                           f'{current_date.year()}%', self.login)).fetchall()
 
             if self.result:
-                for group in self.result:
-                    day_of_the_week = DECODE_DAYS[self.calendar.selectedDate().dayOfWeek()]
-                    if day_of_the_week in group[1].split():
-                        self.today_groups.setRowCount(len(self.result))
-                        self.today_groups.setItem(self.result.index(group), 0, QTableWidgetItem(group[0]))
-                        time = QTableWidgetItem(group[2].split()[group[1].split().index(day_of_the_week)] + ' - '
-                                                + group[3].split()[group[1].split().index(day_of_the_week)])
-                        self.today_groups.setItem(self.result.index(group), 1, time)
+                today = (f'{str(current_date.day()).rjust(2, "0")}.'
+                         f'{str(current_date.month()).rjust(2, "0")}.'
+                         f'{current_date.year()}')
+                for i, group in enumerate(self.result):
+                    index = -1
+                    self.today_groups.setRowCount(len(self.result))
+                    self.today_groups.setItem(i, 0, QTableWidgetItem(group[0]))
 
-                        self.today_groups.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
-                        self.today_groups.scrollToItem(time)
+                    for dates in group[5].split():
+                        if today in dates:
+                            for j, date in enumerate(dates.split(',')):
+                                if today in date and today != date:
+                                    index = j
+                                    break
+                            if index == -1:
+                                time = QTableWidgetItem(
+                                    group[2].split()[group[1].split().index(day_of_the_week)] + ' - '
+                                    + group[3].split()[group[1].split().index(day_of_the_week)])
+                                self.today_groups.setItem(i, 1, time)
+                            else:
+                                time = QTableWidgetItem(dates.split(',')[index].split('.')[3])
+                                self.today_groups.setItem(i, 1, time)
+                    self.today_groups.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
+                    self.today_groups.scrollToItem(time)
                 self.today_groups.viewport().installEventFilter(self)
             else:
                 self.today_groups.setRowCount(0)
+        self.today_groups.setSortingEnabled(True)
 
     def eventFilter(self, source, event):
         if (event.type() == QtCore.QEvent.MouseButtonDblClick and
                 event.buttons() == QtCore.Qt.LeftButton and
                 source is self.today_groups.viewport()):
             self.item = self.today_groups.itemAt(event.pos())
-            self.edit_group = EditGroupWindow(self.result[[i[0] for i in self.result].index(self.item.text())][-1])
+            self.edit_group = EditGroupWindow(self.result[[i[0] for i in self.result].index(self.item.text())][4])
             self.edit_group.show()
             self.edit_group.add_pupil.clicked.connect(self.add_new_pupil)
         return super(TodayWindow, self).eventFilter(source, event)

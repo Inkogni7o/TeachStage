@@ -9,6 +9,7 @@ from PyQt5.QtWidgets import QMainWindow, QApplication, QTableWidgetItem, QMenu, 
 from forms.one_groupUI import Ui_MainWindow
 from new_pupil import NewPupilWindow
 from new_lesson import NewLessonWindow
+from pupil_statistic import StatisticWindow
 
 
 # класс, созданный для уцентрирования ячеек
@@ -45,7 +46,7 @@ class EditGroupWindow(QMainWindow, Ui_MainWindow):
         self.delete_date_action = QAction('Удалить занятие', self)
 
         self.add_pupil_action.triggered.connect(self.new_pupil)
-        self.statistic_action.triggered.connect(self.stastic)
+        self.statistic_action.triggered.connect(self.statistic)
         self.delete_pupil_action.triggered.connect(self.del_pupil)
         self.add_date_action.triggered.connect(lambda: self.configure_date('n'))
         self.delete_date_action.triggered.connect(lambda: self.configure_date('d'))
@@ -148,7 +149,10 @@ class EditGroupWindow(QMainWindow, Ui_MainWindow):
                 self.update_table(self.id_group)
 
     def statistic(self):
-        pass
+        if self.tableWidget.selectedItems():
+            pupil = self.tableWidget.verticalHeaderItem(self.tableWidget.currentRow()).text()
+            self.wndw = StatisticWindow(pupil.split()[0], pupil.split()[1], self.id_group)
+            self.wndw.show()
 
 
 if __name__ == '__main__':
