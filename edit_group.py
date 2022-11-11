@@ -42,14 +42,12 @@ class EditGroupWindow(QMainWindow, Ui_MainWindow):
         self.separator.setSeparator(True)
 
         self.add_date_action = QAction('Добавить занятие', self)
-        self.redact_date_action = QAction('Перенести занятие', self)
         self.delete_date_action = QAction('Удалить занятие', self)
 
         self.add_pupil_action.triggered.connect(self.new_pupil)
         # self.statistic_action.triggered.connect()
-        # self.delete_pupil.triggered.connect()
+        self.delete_pupil_action.triggered.connect(self.del_pupil)
         self.add_date_action.triggered.connect(lambda: self.configure_date('n'))
-        # self.redact_date.triggered.connect()
         self.delete_date_action.triggered.connect(lambda: self.configure_date('d'))
 
         contextMenu.addAction(self.add_pupil_action)
@@ -57,7 +55,6 @@ class EditGroupWindow(QMainWindow, Ui_MainWindow):
         contextMenu.addAction(self.delete_pupil_action)
         contextMenu.addAction(self.separator)
         contextMenu.addAction(self.add_date_action)
-        contextMenu.addAction(self.redact_date_action)
         contextMenu.addAction(self.delete_date_action)
 
         self.action = contextMenu.exec_(self.mapToGlobal(event.pos()))
@@ -102,6 +99,16 @@ class EditGroupWindow(QMainWindow, Ui_MainWindow):
         wndw = NewPupilWindow(self.windowTitle())
         wndw.show()
         wndw.buttonBox.accepted.connect(lambda: self.update_table(self.id_group))
+
+    def del_pupil(self):
+        if self.tableWidget.selectedItems():
+            with sqlite3.connect('main_db.db') as con:
+                pupil = self.tableWidget.verticalHeaderItem(self.tableWidget.currentRow()).text()
+                cur = con.cursor()
+                cur.execute("""DELETE FROM pupils WHERE name=? AND second_name=?""",
+                            (pupil.split()[1], pupil.split()[0]))
+                con.commit()
+                self.update_table(self.id_group)
 
     def configure_date(self, mode: str):
         if mode == 'n':
