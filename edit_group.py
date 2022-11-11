@@ -45,7 +45,7 @@ class EditGroupWindow(QMainWindow, Ui_MainWindow):
         self.delete_date_action = QAction('Удалить занятие', self)
 
         self.add_pupil_action.triggered.connect(self.new_pupil)
-        # self.statistic_action.triggered.connect()
+        self.statistic_action.triggered.connect(self.stastic)
         self.delete_pupil_action.triggered.connect(self.del_pupil)
         self.add_date_action.triggered.connect(lambda: self.configure_date('n'))
         self.delete_date_action.triggered.connect(lambda: self.configure_date('d'))
@@ -146,6 +146,9 @@ class EditGroupWindow(QMainWindow, Ui_MainWindow):
                             (','.join(pupil_attendance), person.split()[1], person.split()[0]))
                 con.commit()
                 self.update_table(self.id_group)
+
+    def statistic(self):
+        pass
 
 
 if __name__ == '__main__':

@@ -25,6 +25,7 @@ class Ui_login_wndw(object):
         self.login_input.setObjectName("login_input")
 
         self.password_input = QtWidgets.QLineEdit(login_wndw)
+        self.password_input.setEchoMode(QtWidgets.QLineEdit.Password)
         self.password_input.setGeometry(QtCore.QRect(90, 100, 241, 22))
         self.password_input.setObjectName("password_input")
 
