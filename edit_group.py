@@ -7,8 +7,8 @@ from PyQt5.QtGui import QColor
 from PyQt5.QtWidgets import QMainWindow, QApplication, QTableWidgetItem, QMenu, QAction, QAbstractItemView
 
 from forms.one_groupUI import Ui_MainWindow
-from new_pupil import NewPupilWindow
 from new_lesson import NewLessonWindow
+from new_pupil import NewPupilWindow
 from pupil_statistic import StatisticWindow
 
 

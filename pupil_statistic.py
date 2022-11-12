@@ -3,8 +3,6 @@ import sqlite3
 
 from PyQt5.QtWidgets import QWidget
 from forms.statisticUI import Ui_Form
-import matplotlib.pyplot as plt
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 
 
 class StatisticWindow(QWidget, Ui_Form):
@@ -32,8 +30,12 @@ class StatisticWindow(QWidget, Ui_Form):
                 for day in self.all_attendance[month]:
                     if day == '2':
                         summa += 2
+                        self.label_5.setText(str(int(self.label_5.text() if self.label_5.text() else 0) + 1))
                     elif day == '1':
                         summa += 1
+                        self.label_9.setText(str(int(self.label_9.text() if self.label_9.text() else 0) + 1))
+                    elif day == '0':
+                        self.label_7.setText(str(int(self.label_7.text() if self.label_7.text() else 0) + 1))
                 sums.append(summa)
 
             ax = self.figure.add_subplot(111)
