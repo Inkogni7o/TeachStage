@@ -107,7 +107,7 @@ class EditGroupWindow(QMainWindow, Ui_MainWindow):
                 pupil = self.tableWidget.verticalHeaderItem(self.tableWidget.currentRow()).text()
                 cur = con.cursor()
                 cur.execute("""DELETE FROM pupils WHERE name=? AND second_name=?""",
-                            (pupil.split()[1], pupil.split()[0]))
+                            (pupil.split()[0], pupil.split()[1]))
                 con.commit()
                 self.update_table(self.id_group)
 

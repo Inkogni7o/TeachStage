@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
+import matplotlib.pyplot as plt
 from PyQt5 import QtCore, QtGui, QtWidgets
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 
 
 class Ui_Form(object):
@@ -12,17 +14,6 @@ class Ui_Form(object):
         self.verticalLayout.setObjectName("verticalLayout")
         spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout.addItem(spacerItem)
-        self.radioButton = QtWidgets.QRadioButton(Form)
-        self.radioButton.setObjectName("radioButton")
-        self.verticalLayout.addWidget(self.radioButton)
-        self.comboBox = QtWidgets.QComboBox(Form)
-        self.comboBox.setObjectName("comboBox")
-        self.verticalLayout.addWidget(self.comboBox)
-        self.radioButton_2 = QtWidgets.QRadioButton(Form)
-        self.radioButton_2.setObjectName("radioButton_2")
-        self.verticalLayout.addWidget(self.radioButton_2)
-        spacerItem1 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
-        self.verticalLayout.addItem(spacerItem1)
         self.horizontalLayout_2 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_2.setObjectName("horizontalLayout_2")
         self.label = QtWidgets.QLabel(Form)
@@ -80,10 +71,11 @@ class Ui_Form(object):
         self.label_7.setObjectName("label_7")
         self.horizontalLayout_4.addWidget(self.label_7)
         self.verticalLayout.addLayout(self.horizontalLayout_4)
-        spacerItem2 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
-        self.verticalLayout.addItem(spacerItem2)
+        spacerItem1 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        self.verticalLayout.addItem(spacerItem1)
         self.horizontalLayout.addLayout(self.verticalLayout)
-        self.graphicsView = PlotWidget(Form)
+        self.figure = plt.Figure()
+        self.graphicsView = FigureCanvas(self.figure)
         self.graphicsView.setObjectName("graphicsView")
         self.horizontalLayout.addWidget(self.graphicsView)
 
@@ -93,9 +85,6 @@ class Ui_Form(object):
     def retranslateUi(self, Form):
         _translate = QtCore.QCoreApplication.translate
         Form.setWindowTitle(_translate("Form", "Form"))
-        self.radioButton.setText(_translate("Form", "Статистика за месяц"))
-        self.radioButton_2.setText(_translate("Form", "Статистика за всё время обучения"))
         self.label.setText(_translate("Form", "Посещено:"))
         self.label_8.setText(_translate("Form", "Посещено с 1 часом"))
         self.label_6.setText(_translate("Form", "Отсутствоввал(а): "))
-from pyqtgraph import PlotWidget
