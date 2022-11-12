@@ -1,11 +1,11 @@
 # -*- coding: UTF-8 -*-
 import sqlite3
-import sys
-import holidays
 from datetime import datetime, timedelta, date
 
+import holidays
 from PyQt5.QtCore import QTime, QDate
-from PyQt5.QtWidgets import QApplication, QWidget
+from PyQt5.QtWidgets import QWidget
+
 from forms.add_groupUI import Ui_Form
 
 
@@ -69,7 +69,7 @@ class NewGroupWindow(QWidget, Ui_Form):
         with sqlite3.connect('main_db.db') as con:
             cur = con.cursor()
             cur.execute("""INSERT INTO groups(title, teacher_login, max_count, days_of_the_week, starts,
-             ends, day_start, day_end, days_work) VALUES(?,?,?,?,?,?,?,?,?)""",
+             ends, day_start, day_end, days_work, cost, procent) VALUES(?,?,?,?,?,?,?,?,?,?,?)""",
                         (self.name_group_input.text(),
                          self.login,
                          int(self.count_pupils_input.text()),
@@ -78,13 +78,8 @@ class NewGroupWindow(QWidget, Ui_Form):
                          ' '.join([self.main_dict[i][1].text() for i in self.days]),
                          str(self.dateEdit.date().day()) + '.' + str(self.dateEdit.date().month()),
                          str(self.dateEdit_2.date().day()) + '.' + str(self.dateEdit_2.date().month()),
-                         ','.join(all_work_days)))
+                         ','.join(all_work_days),
+                         int(self.cost_one_lesson.text()),
+                         int(self.procent.text())))
             con.commit()
             self.close()
-
-
-if __name__ == '__main__':
-    app = QApplication(sys.argv)
-    main_app = NewGroupWindow('Логин')
-    main_app.show()
-    sys.exit(app.exec_())

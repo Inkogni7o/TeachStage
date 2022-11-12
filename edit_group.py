@@ -1,10 +1,9 @@
 # -*- coding: UTF-8 -*-
 import sqlite3
-import sys
 
 from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtGui import QColor
-from PyQt5.QtWidgets import QMainWindow, QApplication, QTableWidgetItem, QMenu, QAction, QAbstractItemView
+from PyQt5.QtWidgets import QMainWindow, QTableWidgetItem, QMenu, QAction, QAbstractItemView
 
 from forms.one_groupUI import Ui_MainWindow
 from new_lesson import NewLessonWindow
@@ -154,10 +153,3 @@ class EditGroupWindow(QMainWindow, Ui_MainWindow):
             pupil = self.tableWidget.verticalHeaderItem(self.tableWidget.currentRow()).text()
             self.wndw = StatisticWindow(pupil.split()[0], pupil.split()[1], self.id_group)
             self.wndw.show()
-
-
-if __name__ == '__main__':
-    app = QApplication(sys.argv)
-    main_app = EditGroupWindow(17)
-    main_app.show()
-    sys.exit(app.exec_())

@@ -1,17 +1,18 @@
 # -*- coding: UTF-8 -*-
 import datetime as dt
 import sqlite3
-import sys
 
 import holidays
-from PyQt5.QtCore import QDate
 from PyQt5 import QtWidgets, QtCore
-from PyQt5.QtWidgets import QMainWindow, QApplication, QTableWidgetItem, QHeaderView
-from forms.today_formUI import Ui_MainWindow
-from new_group import NewGroupWindow
+from PyQt5.QtCore import QDate
+from PyQt5.QtWidgets import QMainWindow, QTableWidgetItem, QHeaderView, QAction
+
 from consts import DECODE_DAYS
 from edit_group import EditGroupWindow
+from forms.today_formUI import Ui_MainWindow
+from new_group import NewGroupWindow
 from new_pupil import NewPupilWindow
+from teacher_page import TeacherWindow
 
 
 class TodayWindow(QMainWindow, Ui_MainWindow):
@@ -20,6 +21,9 @@ class TodayWindow(QMainWindow, Ui_MainWindow):
         super(TodayWindow, self).__init__()
         self.setupUi(self)
         self.add_group.triggered.connect(self.add_new_group)
+        self.teacher = QAction('Открыть вкладку педагога', self)
+        self.teacher_menu.addAction(self.teacher)
+        self.teacher.triggered.connect(lambda: self.open_teacher(login))
         self.calendar.setSelectedDate(QDate(*self.today))
         self.display_groups()
         self.calendar.clicked.connect(self.display_groups)
@@ -95,9 +99,6 @@ class TodayWindow(QMainWindow, Ui_MainWindow):
         self.wndw_new.buttonBox.accepted.connect(lambda: self.edit_group.update_table(self.result[[i[0]
             for i in self.result].index(self.item.text())][-1]))
 
-
-if __name__ == '__main__':
-    app = QApplication(sys.argv)
-    main_app = TodayWindow('Логин')
-    main_app.show()
-    sys.exit(app.exec_())
+    def open_teacher(self, login):
+        self.wndw = TeacherWindow(login)
+        self.wndw.show()
