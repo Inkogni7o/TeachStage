@@ -85,19 +85,12 @@ class TodayWindow(QMainWindow, Ui_MainWindow):
             self.item = self.today_groups.itemAt(event.pos())
             self.edit_group = EditGroupWindow(self.result[[i[0] for i in self.result].index(self.item.text())][4])
             self.edit_group.show()
-            self.edit_group.add_pupil.clicked.connect(self.add_new_pupil)
         return super(TodayWindow, self).eventFilter(source, event)
 
     def add_new_group(self):
         self.wndw = NewGroupWindow(self.login)
         self.wndw.show()
         self.wndw.buttonBox.accepted.connect(self.display_groups)
-
-    def add_new_pupil(self):
-        self.wndw_new = NewPupilWindow(self.item.text())
-        self.wndw_new.show()
-        self.wndw_new.buttonBox.accepted.connect(lambda: self.edit_group.update_table(self.result[[i[0]
-            for i in self.result].index(self.item.text())][-1]))
 
     def open_teacher(self, login):
         self.wndw = TeacherWindow(login)

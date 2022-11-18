@@ -30,10 +30,10 @@ class EditGroupWindow(QMainWindow, Ui_MainWindow):
         self.was_2.clicked.connect(lambda: self.set_attendance(2))
         self.was_1.clicked.connect(lambda: self.set_attendance(1))
         self.was_0.clicked.connect(lambda: self.set_attendance(0))
+        self.add_pupil.clicked.connect(self.new_pupil)
 
     def contextMenuEvent(self, event):
         contextMenu = QMenu(self)
-        # TODO: сделать окно статистики ученика
         self.add_pupil_action = QAction('Добавить ученика', self)
         self.statistic_action = QAction('Статистика ученика', self)
         self.delete_pupil_action = QAction('Удалить ученика', self)
@@ -139,7 +139,6 @@ class EditGroupWindow(QMainWindow, Ui_MainWindow):
             with sqlite3.connect('main_db.db') as con:
                 cur = con.cursor()
                 person = self.tableWidget.verticalHeaderItem(self.tableWidget.currentRow()).text()
-                print(person.split()[0], person.split()[1])
                 pupil_attendance = cur.execute("""SELECT attendance FROM pupils WHERE name=? AND second_name=?""",
                                                (person.split()[0], person.split()[1])).fetchone()[0].split(',')
                 pupil_attendance[self.tableWidget.currentColumn()] = str(number)

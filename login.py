@@ -7,3 +7,4 @@ class LogWindow(QWidget, Ui_login_wndw):
     def __init__(self):
         super(LogWindow, self).__init__()
         self.setupUi(self)
+        self.setWindowTitle('Вход в учетную запись')
