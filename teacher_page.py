@@ -27,16 +27,22 @@ class TeacherWindow(QWidget, Ui_Form):
             cur = con.cursor()
             self.pupils = cur.execute("""SELECT attendance FROM pupils WHERE id_group=?""",
                                       (self.groups[self.comboBox_2.currentIndex()][0],)).fetchall()
-        if self.radioButton_2.isChecked():
-            irreplaceable_lessons, attended_lessons = 0, 0
+        if self.radioButton.isChecked():
+            pass
+        elif self.radioButton_2.isChecked():
+            irreplaceable_lessons, attended_lessons, might_lessons = 0, 0, 0
             for pupil in self.pupils:
                 pupil_attendance = pupil[0].split(',')
                 irreplaceable_lessons += pupil_attendance.count('X')
                 attended_lessons += pupil_attendance.count('2') * 2 + pupil_attendance.count('1')
-            self.lineEdit.setText(str(
-                attended_lessons * int(self.groups[self.comboBox_2.currentIndex()][2])
-                * float(self.groups[self.comboBox_2.currentIndex()][3])
-            ))
+                might_lessons += pupil_attendance.count('.') * 2
+                now_earnings = (attended_lessons * int(self.groups[self.comboBox_2.currentIndex()][2])
+                                * float(self.groups[self.comboBox_2.currentIndex()][3]))
+
+            self.lineEdit_2.setText(str(now_earnings))
+            self.lineEdit.setText(str(now_earnings + might_lessons
+                                      * int(self.groups[self.comboBox_2.currentIndex()][2])
+                                      * float(self.groups[self.comboBox_2.currentIndex()][3])))
 
 
 if __name__ == '__main__':
@@ -44,5 +50,3 @@ if __name__ == '__main__':
     ex = TeacherWindow('Логин')
     ex.show()
     sys.exit(app.exec())
-
-
