@@ -20,6 +20,11 @@ class TeacherWindow(QWidget, Ui_Form):
             cur = con.cursor()
             self.groups = cur.execute("""SELECT id,title,cost,percent,days_work FROM groups
              WHERE teacher_login=?""", (login,)).fetchall()
+            self.comboBox.addItems(sorted(list(set(['.'.join(i.split('.')[1:]) if len(i.split('.')) == 2
+                                                    else '.'.join(i.split('.')[1:3])
+                                                    for i in
+                                                    self.groups[self.comboBox_2.currentIndex()][-1].split(',')])),
+                                          key=lambda x: (int(x[1]), int(x[0]))))
             self.comboBox_2.addItems([i[1] for i in self.groups])
 
     def update_data(self):
@@ -27,10 +32,12 @@ class TeacherWindow(QWidget, Ui_Form):
             cur = con.cursor()
             self.pupils = cur.execute("""SELECT attendance FROM pupils WHERE id_group=?""",
                                       (self.groups[self.comboBox_2.currentIndex()][0],)).fetchall()
+
         if self.radioButton.isChecked():
             pass
+
         elif self.radioButton_2.isChecked():
-            irreplaceable_lessons, attended_lessons, might_lessons = 0, 0, 0
+            irreplaceable_lessons, attended_lessons, might_lessons, now_earnings = 0, 0, 0, 0
             for pupil in self.pupils:
                 pupil_attendance = pupil[0].split(',')
                 irreplaceable_lessons += pupil_attendance.count('X')
