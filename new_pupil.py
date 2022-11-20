@@ -27,7 +27,7 @@ class NewPupilWindow(QWidget, Ui_Form):
         for day in days.split(','):
             if dt.datetime.now() > dt.datetime(year=int(day.split('.')[2]),
                                                month=int(day.split('.')[1]),
-                                               day=int(day.split('.')[0]) + 1):
+                                               day=int(day.split('.')[0])):
                 attendance += 'X,'
             else:
                 attendance += '.,'
