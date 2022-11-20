@@ -53,8 +53,8 @@ class Ui_Form(object):
     def retranslateUi(self, Form):
         _translate = QtCore.QCoreApplication.translate
         Form.setWindowTitle(_translate("Form", "Form"))
-        self.label.setText(_translate("Form", "Ожидаемый доход:"))
-        self.radioButton.setText(_translate("Form", "За один месяц"))
-        self.radioButton_2.setText(_translate("Form", "За весь курс"))
+        self.label.setText(_translate("Form", "Максимальный доход:"))
+        self.radioButton.setText(_translate("Form", "За один месяц:"))
+        self.radioButton_2.setText(_translate("Form", "За весь курс:"))
         self.label_2.setText(_translate("Form", "Запланированные занятия:"))
-        self.label_3.setText(_translate("Form", "Будет проведено занятий:"))
+        self.label_3.setText(_translate("Form", "Гарантированный доход:"))

@@ -18,8 +18,8 @@ from teacher_page import TeacherWindow
 class TodayWindow(QMainWindow, Ui_MainWindow):
     def __init__(self, login: str):
         self.login, self.today = login, (dt.datetime.now().year, dt.datetime.now().month, dt.datetime.now().day)
-        self.setWindowTitle('TeachStage')
         super(TodayWindow, self).__init__()
+        self.setWindowTitle('TeachStage')
         self.setupUi(self)
         self.add_group.triggered.connect(self.add_new_group)
         self.teacher = QAction('Открыть вкладку педагога', self)
