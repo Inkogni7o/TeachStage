@@ -69,7 +69,7 @@ class NewGroupWindow(QWidget, Ui_Form):
         with sqlite3.connect('main_db.db') as con:
             cur = con.cursor()
             cur.execute("""INSERT INTO groups(title, teacher_login, max_count, days_of_the_week, starts,
-             ends, day_start, day_end, days_work, cost, procent) VALUES(?,?,?,?,?,?,?,?,?,?,?)""",
+             ends, day_start, day_end, days_work, cost, percent) VALUES(?,?,?,?,?,?,?,?,?,?,?)""",
                         (self.name_group_input.text(),
                          self.login,
                          int(self.count_pupils_input.text()),
