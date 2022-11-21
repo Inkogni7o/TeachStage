@@ -1,9 +1,12 @@
 # -*- coding: UTF-8 -*-
 import sqlite3
+import sys
 
 from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtGui import QColor
-from PyQt5.QtWidgets import QMainWindow, QTableWidgetItem, QMenu, QAction, QAbstractItemView
+from PyQt5.QtWidgets import QMainWindow, QTableWidgetItem, QMenu, QAction, QAbstractItemView, QApplication
+
+import xlsxwriter
 
 from forms.one_groupUI import Ui_MainWindow
 from new_lesson import NewLessonWindow
@@ -31,6 +34,7 @@ class EditGroupWindow(QMainWindow, Ui_MainWindow):
         self.was_1.clicked.connect(lambda: self.set_attendance(1))
         self.was_0.clicked.connect(lambda: self.set_attendance(0))
         self.add_pupil.clicked.connect(self.new_pupil)
+        self.print_table_btn.clicked.connect(self.save_table)
 
     def contextMenuEvent(self, event):
         contextMenu = QMenu(self)
@@ -152,3 +156,33 @@ class EditGroupWindow(QMainWindow, Ui_MainWindow):
             pupil = self.tableWidget.verticalHeaderItem(self.tableWidget.currentRow()).text()
             self.wndw = StatisticWindow(pupil.split()[0], pupil.split()[1], self.id_group)
             self.wndw.show()
+
+    def save_table(self):
+        workbook = xlsxwriter.Workbook(f'{self.windowTitle()}.xlsx')
+        worksheet = workbook.add_worksheet()
+
+        worksheet.write_row(0, 1, ['.'.join(i.split('.')[:2]) for i in self.timetable[0].split(',')])
+        worksheet.write_column(1, 0, [str(i[1]) + ' ' + str(i[2]) for i in self.pupils])
+        worksheet.set_column(0, 0, max([len(str(i[1]) + ' ' + str(i[2])) for i in self.pupils]) + 1)
+        for i, pupil in enumerate(self.pupils):
+            for j, day in enumerate(pupil[-1].split(',')):
+                if day == '2':
+                    worksheet.write(i + 1, j + 1, '2')
+                elif day == '1':
+                    worksheet.write(i + 1, j + 1, '1')
+                elif day == '0':
+                    worksheet.write(i + 1, j + 1, '0')
+                elif day == 'X':
+                    worksheet.write(i + 1, j + 1, 'X')
+                else:
+                    worksheet.write(i + 1, j + 1, '')
+
+        workbook.close()
+
+
+if __name__ == '__main__':
+    app = QApplication(sys.argv)
+    main_app = EditGroupWindow(21)
+    main_app.show()
+    sys.exit(app.exec_())
+

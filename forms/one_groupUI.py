@@ -23,6 +23,8 @@ class Ui_MainWindow(object):
         self.horizontalLayout.setObjectName("horizontalLayout")
         spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.horizontalLayout.addItem(spacerItem)
+        self.print_table_btn = QtWidgets.QPushButton('Распечатать', self.centralwidget)
+        self.horizontalLayout.addWidget(self.print_table_btn)
         self.was_2 = QtWidgets.QPushButton(self.centralwidget)
         self.was_2.setObjectName("was_2")
         self.horizontalLayout.addWidget(self.was_2)
